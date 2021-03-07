@@ -117,7 +117,6 @@ class OpenChannelActivityTest {
         onView(withId(R.id.text_login_versions))
             .check(matches(isDisplayed()))
 
-
         onView(withId(R.id.edittext_login_user_id))
             .check(matches(isDisplayed()))
             .perform(replaceText(userId), closeSoftKeyboard())
@@ -130,10 +129,7 @@ class OpenChannelActivityTest {
             .check(matches(isDisplayed()))
             .perform(click())
 
-        onView(isRoot()).perform(waitForView(withId(R.id.toolbar_main)))
-
-
+        Thread.sleep(5000)
     }
-
 
 }
