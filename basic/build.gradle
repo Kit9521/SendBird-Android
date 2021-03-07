@@ -17,6 +17,13 @@ buildscript {
     }
 }
 
+
+test {
+    useJUnit()
+
+    maxHeapSize = '1G'
+}
+
 allprojects {
     repositories {
         google()

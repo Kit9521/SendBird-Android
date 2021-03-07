@@ -77,10 +77,5 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-contrib:3.4.0-alpha04'
 }
 
-test {
-    useJUnit()
-
-    maxHeapSize = '1G'
-}
 
 apply plugin: 'com.google.gms.google-services'
