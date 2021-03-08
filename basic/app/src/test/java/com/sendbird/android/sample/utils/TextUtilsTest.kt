@@ -14,7 +14,7 @@ class TextUtilsTest {
 
     @Test
     fun isEmpty_ReturnFalse(){
-        Assert.assertFalse(TextUtils.isEmpty(" "))
+        Assert.assertFalse(TextUtils.isEmpty(""))
         Assert.assertFalse(TextUtils.isEmpty("null"))
         Assert.assertFalse(TextUtils.isEmpty("123123"))
     }

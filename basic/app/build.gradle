@@ -29,7 +29,7 @@ android {
     }
     testOptions {
         unitTests.all {
-            useJUnitPlatform()
+            useJUnit()
         }
     }
 }
