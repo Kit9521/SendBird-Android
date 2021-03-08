@@ -28,11 +28,8 @@ jobs:
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 29
-          script: |
-            ls
-            cd basic
-            ls
-            basic/gradlew connectedCheck
+          working-directory: ./basic
+          script: ./gradlew connectedCheck
 
 #    - name: Grant execute permission for gradlew
 #      run: chmod +x basic/gradlew
