@@ -17,8 +17,7 @@ fun waitForView(viewMatcher: Matcher<View>, timeout: Int=5000): ViewAction {
         }
 
         override fun getDescription(): String {
-            // FIXME: update it
-            return "wait for a specific view with during $timeout millis."
+            return "wait for a specific view during $timeout millis."
         }
 
         override fun perform(uiController: UiController, rootView: View) {
@@ -29,15 +28,13 @@ fun waitForView(viewMatcher: Matcher<View>, timeout: Int=5000): ViewAction {
             do {
                 // Iterate through all views on the screen and see if the view we are looking for is there already
                 for (child in TreeIterables.breadthFirstViewTraversal(rootView)) {
-                    // found view with required ID
+                    // found view with required matcher
                     if (viewMatcher.matches(child)) {
                         return
                     }
                 }
-                // Loops the main thread for a specified period of time.
-                // Control may not return immediately, instead it'll return after the provided delay has passed and the queue is in an idle state again.
                 uiController.loopMainThreadForAtLeast(100)
-            } while (System.currentTimeMillis() < endTime) // in case of a timeout we throw an exception -&gt; test fails
+            } while (System.currentTimeMillis() < endTime)
             throw PerformException.Builder()
                 .withCause(TimeoutException())
                 .withActionDescription(this.description)
