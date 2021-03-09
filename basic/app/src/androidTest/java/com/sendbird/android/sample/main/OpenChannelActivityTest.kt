@@ -1,5 +1,10 @@
 package com.sendbird.android.sample.main
 
+import android.app.Activity
+import android.app.Instrumentation.ActivityResult
+import android.content.ContentResolver
+import android.content.Intent
+import android.net.Uri
 import com.sendbird.android.sample.R
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.ext.junit.rules.ActivityScenarioRule
@@ -7,8 +12,14 @@ import androidx.test.espresso.action.ViewActions.*
 import androidx.test.espresso.matcher.ViewMatchers.*
 import androidx.test.espresso.matcher.ViewMatchers.isRoot
 import androidx.test.espresso.Espresso.onView
+import androidx.test.espresso.intent.Intents
+import androidx.test.espresso.intent.Intents.intended
+import androidx.test.espresso.intent.Intents.intending
+import androidx.test.espresso.intent.matcher.IntentMatchers.hasAction
+import androidx.test.espresso.intent.matcher.IntentMatchers.hasData
 import org.hamcrest.Matchers.allOf
 import androidx.test.filters.LargeTest
+import androidx.test.rule.GrantPermissionRule
 import org.junit.Rule
 import org.junit.Test
 import org.junit.BeforeClass
@@ -29,6 +40,13 @@ class OpenChannelActivityTest {
     @JvmField
     val activityRule = ActivityScenarioRule(LoginActivity::class.java)
 
+    @Rule
+    @JvmField
+    var mGrantPermissionRule =
+        GrantPermissionRule.grant(
+            "android.permission.WRITE_EXTERNAL_STORAGE"
+        )
+
     companion object {
 
         var textMessage = ""
@@ -36,13 +54,15 @@ class OpenChannelActivityTest {
         @JvmStatic
         @BeforeClass
         fun setup() {
+            // generate unique message each time
             textMessage = getRandomText(15)
         }
 
-        private fun getRandomText(length: Int = 5): String {
-
+        private fun getRandomText(length: Int): String {
+            /*
+             *  return random string with specified length
+             */
             val charSet = ('a'..'z') + ('A'..'Z') + ('0'..'9')
-
             return List(length) { charSet.random() }.joinToString("")
         }
     }
@@ -51,14 +71,9 @@ class OpenChannelActivityTest {
     fun sendMessage() {
         login(userIdA, userNicknameA)
 
-        // TODO: check for elements
-        // ...
-
         onView(withId(R.id.linear_layout_open_channels)).perform(click())
 
         val openChannelMatcher = allOf(withId(R.id.text_open_channel_list_name), withText(openChannelName))
-
-
         onView(isRoot()).perform(waitForView(openChannelMatcher))
         onView(openChannelMatcher)
             .perform(click())
@@ -77,10 +92,24 @@ class OpenChannelActivityTest {
         onView(isRoot()).perform(waitForView(chatBox))
         onView(chatBox).check(matches(isDisplayed()))
 
+        val resultData = Intent()
+        resultData.setData(Uri.parse("content://com.android.providers.downloads.documents/document/4"))
+        val result = ActivityResult(Activity.RESULT_OK, resultData)
 
-        // TODO: upload image
-//        onView(withId(R.id.button_open_channel_chat_upload)).perform(click())
+        val expectedIntent = allOf(hasAction(Intent.ACTION_CHOOSER))
+//        MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+        Intents.init()
+        intending(expectedIntent).respondWith(result)
 
+        ContentResolver.SCHEME_ANDROID_RESOURCE
+
+        onView(withId(R.id.button_open_channel_chat_upload)).perform(click())
+        Thread.sleep(3000)
+        intended(expectedIntent)
+        Intents.release()
+        Thread.sleep(3000)
+        onView(withText("UPLOAD")).perform(click())
+        Thread.sleep(3000)
         // Back to home page and logout
         onView(withContentDescription("Navigate up")).perform(click())
         onView(withContentDescription("Navigate up")).perform(click())
