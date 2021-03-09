@@ -50,7 +50,7 @@ class OpenChannelActivityTest {
     }
 
     @Test
-    fun sendMessageToOpenChannel() {
+    fun sendMessage() {
         login(userIdA, userNicknameA)
 
         // Enter open channel list
@@ -89,7 +89,7 @@ class OpenChannelActivityTest {
     }
 
     @Test
-    fun showOtherUserMessageOnOpenChannel() {
+    fun showMessage() {
         login(userIdB, userNicknameB)
 
         // Enter open channel list
