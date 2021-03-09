@@ -1,25 +1,13 @@
 package com.sendbird.android.sample.main
 
-import android.app.Activity
-import android.app.Instrumentation.ActivityResult
-import android.content.ContentResolver
-import android.content.Intent
-import android.net.Uri
 import com.sendbird.android.sample.R
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.espresso.action.ViewActions.*
 import androidx.test.espresso.matcher.ViewMatchers.*
-import androidx.test.espresso.matcher.ViewMatchers.isRoot
 import androidx.test.espresso.Espresso.onView
-import androidx.test.espresso.intent.Intents
-import androidx.test.espresso.intent.Intents.intended
-import androidx.test.espresso.intent.Intents.intending
-import androidx.test.espresso.intent.matcher.IntentMatchers.hasAction
-import androidx.test.espresso.intent.matcher.IntentMatchers.hasData
 import org.hamcrest.Matchers.allOf
 import androidx.test.filters.LargeTest
-import androidx.test.rule.GrantPermissionRule
 import org.junit.Rule
 import org.junit.Test
 import org.junit.BeforeClass
@@ -28,24 +16,18 @@ import org.junit.BeforeClass
 @LargeTest
 class OpenChannelActivityTest {
 
+    // login info
     private val userIdA = "99901"
-    private val userNicknameA = "Peter"
+    private val userNicknameA = "Tester 1"
     private val userIdB = "99902"
-    private val userNicknameB = "Jackson"
+    private val userNicknameB = "Tester 2"
 
-    // pre-created open channel
-    private val openChannelName = "T01"
+    // name of the pre-created open channel
+    private val openChannelName = "Room 001"
 
     @Rule
     @JvmField
     val activityRule = ActivityScenarioRule(LoginActivity::class.java)
-
-    @Rule
-    @JvmField
-    var mGrantPermissionRule =
-        GrantPermissionRule.grant(
-            "android.permission.WRITE_EXTERNAL_STORAGE"
-        )
 
     companion object {
 
@@ -68,22 +50,26 @@ class OpenChannelActivityTest {
     }
 
     @Test
-    fun sendMessage() {
+    fun sendMessageToOpenChannel() {
         login(userIdA, userNicknameA)
 
+        // Enter open channel list
         onView(withId(R.id.linear_layout_open_channels)).perform(click())
 
-        val openChannelMatcher = allOf(withId(R.id.text_open_channel_list_name), withText(openChannelName))
+        // select specified open channel
+        val openChannelMatcher =
+            allOf(withId(R.id.text_open_channel_list_name), withText(openChannelName))
         onView(isRoot()).perform(waitForView(openChannelMatcher))
         onView(openChannelMatcher)
             .perform(click())
 
+        // send text message to the chatroom
         onView(isRoot()).perform(waitForView(withId(R.id.edittext_chat_message)))
         onView(withId(R.id.edittext_chat_message))
             .perform(typeText(textMessage), closeSoftKeyboard())
         onView(withId(R.id.button_open_channel_chat_send)).perform(click())
 
-
+        // Verify the message just sent able to display on the chatroom
         val chatBox = allOf(
             withChild(allOf(withId(R.id.text_open_chat_nickname), withText(userNicknameA))),
             withChild(allOf(withId(R.id.text_open_chat_message), withText(textMessage)))
@@ -92,51 +78,41 @@ class OpenChannelActivityTest {
         onView(isRoot()).perform(waitForView(chatBox))
         onView(chatBox).check(matches(isDisplayed()))
 
-        val resultData = Intent()
-        resultData.setData(Uri.parse("content://com.android.providers.downloads.documents/document/4"))
-        val result = ActivityResult(Activity.RESULT_OK, resultData)
+        // TODO: send image message
+        // ...
 
-        val expectedIntent = allOf(hasAction(Intent.ACTION_CHOOSER))
-//        MediaStore.Images.Media.EXTERNAL_CONTENT_URI
-        Intents.init()
-        intending(expectedIntent).respondWith(result)
-
-        ContentResolver.SCHEME_ANDROID_RESOURCE
-
-        onView(withId(R.id.button_open_channel_chat_upload)).perform(click())
-        Thread.sleep(3000)
-        intended(expectedIntent)
-        Intents.release()
-        Thread.sleep(3000)
-        onView(withText("UPLOAD")).perform(click())
-        Thread.sleep(3000)
-        // Back to home page and logout
+        // Back to main activity and logout
         onView(withContentDescription("Navigate up")).perform(click())
         onView(withContentDescription("Navigate up")).perform(click())
         onView(withId(R.id.button_disconnect)).perform(click())
 
     }
 
-
     @Test
-    fun showMessage() {
+    fun showOtherUserMessageOnOpenChannel() {
         login(userIdB, userNicknameB)
+
+        // Enter open channel list
         onView(withId(R.id.linear_layout_open_channels)).perform(click())
-        Thread.sleep(3000)
 
-        onView(withText(openChannelName)).perform(click())
+        // select specified open channel
+        val openChannelMatcher =
+            allOf(withId(R.id.text_open_channel_list_name), withText(openChannelName))
+        onView(isRoot()).perform(waitForView(openChannelMatcher))
+        onView(openChannelMatcher)
+            .perform(click())
 
-        Thread.sleep(3000)
-
-        // Check text displayed
+        // Check is text message displayed
+        val chatBox = allOf(
+            withChild(allOf(withId(R.id.text_open_chat_nickname), withText(userNicknameA))),
+            withChild(allOf(withId(R.id.text_open_chat_message), withText(textMessage)))
+        )
+        onView(isRoot()).perform(waitForView(chatBox))
         onView(
-            allOf(
-                withChild(allOf(withId(R.id.text_open_chat_nickname), withText(userNicknameA))),
-                withChild(allOf(withId(R.id.text_open_chat_message), withText(textMessage)))
-            )
+            chatBox
         ).check(matches(isDisplayed()))
 
-        // TODO: Check image displayed
+        // TODO: Check image message is displayed
         // ...
 
     }
@@ -158,6 +134,7 @@ class OpenChannelActivityTest {
             .check(matches(isDisplayed()))
             .perform(click())
 
+        // FIXME: waitForView doesn't work here, use Thread.sleep instead
         Thread.sleep(5000)
     }
 
